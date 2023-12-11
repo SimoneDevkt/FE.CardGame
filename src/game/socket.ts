@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type payload = string | number | object | any[]
 
 interface socketMessage {

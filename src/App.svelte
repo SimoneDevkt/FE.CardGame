@@ -1,6 +1,8 @@
 <script lang="ts">
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from '/vite.svg'
+
+  import './game/game'
 </script>
 
 <main>
