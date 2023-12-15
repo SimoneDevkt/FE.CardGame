@@ -19,6 +19,10 @@ x.on<string>('message1', string1 => {
 
 x.send<number>('message2', 3)
 
+x.on('newUser', n => {
+  console.log(n)
+})
+
 x.onclose(err => {
   console.log(err)
 })

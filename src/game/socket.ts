@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type payload = string | number | object | any[]
+type payload = string | number | object | unknown[]
 
 interface socketMessage {
   method: string
@@ -8,17 +7,13 @@ interface socketMessage {
 
 export default class MySocket {
   socket: WebSocket
-  messages = new Map<string, (data: any) => void>()
 
   constructor(url: string) {
     this.socket = new WebSocket(url) // Create WebSocket connection.
 
     this.socket.onmessage = (event: { data: string }) => {
       const { method, payload }: socketMessage = JSON.parse(event.data)
-      const cb = this.messages.get(method)
-      if (cb) {
-        cb(payload)
-      }
+      this.socket.dispatchEvent(new CustomEvent(`my_${method}`, { detail: payload }))
     }
   }
   get webSocket(): WebSocket {
@@ -33,12 +28,13 @@ export default class MySocket {
   onerror<T>(cb: (ev: Event) => T) {
     this.socket.onerror = cb
   }
-
   onclose(cb: (ev: CloseEvent) => void) {
     this.socket.onclose = cb
   }
-  on<T extends payload>(str: string, cb: (payload: T) => void): void {
-    this.messages.set(str, cb)
+  on<T extends payload>(method: string, cb: (payload: T) => void): void {
+    this.socket.addEventListener(`my_${method}`, ((e: CustomEvent) => {
+      cb(e.detail)
+    }) as EventListener)
   }
   send<T>(method: string, payload: T): void {
     if (this.socket.readyState === WebSocket.OPEN) {
