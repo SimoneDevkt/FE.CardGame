@@ -2,7 +2,7 @@
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from '/vite.svg'
 
-  import './game/game'
+  import { ciao } from './game/game'
 </script>
 
 <main>
@@ -23,6 +23,10 @@
   <p class="read-the-docs">
     Click on the Vite and Svelte logos to learn more
   </p>
+
+  <button class="danger lg" on:click={()=>ciao.start()}>start</button>
+  <button class="danger lg" on:click={()=>ciao.choseCards([0, 1])}>choseCards</button>
+  <button class="danger lg" on:click={()=>ciao.choseWinner(0)}>choseWinner</button>
 </main>
 
 <style>
