@@ -1,6 +1,19 @@
 import MySocket from './socket'
+import {
+  userList,
+  phrase,
+  words,
+  candidateWords,
+  type userInfo,
+  type Phrases,
+  type Words,
+  iamhost,
+  iammaster,
+  stateMachine,
+  selected
+} from '../store'
 
-const nick = "test" //prompt("Insert Nickname")
+const nick = 'test' //prompt("Insert Nickname")
 const x = new MySocket(`ws://localhost:3000?nick=${nick}`)
 
 const test = () => {
@@ -11,53 +24,53 @@ x.onclose(test)
 
 await x.onopen()
 
-export interface Phrases {
-  phrase: string[]
+interface round {
+  phrase: Phrases
+  cards: Words[]
 }
 
-export interface Words {
-  word: string
+x.on<round>('nextManche', payload => {
+  iammaster.set(false)
+  nextManche(payload)
+})
+x.on<round>('nextMancheMaster', payload => {
+  iammaster.set(true)
+  nextManche(payload)
+})
+function nextManche(payload: round) {
+  phrase.set(payload.phrase)
+  words.set(payload.cards)
+  stateMachine.set(1)
+  selected.set(new Set())
 }
 
-x.on('nextManche', (string1: {
-  phrase: Phrases;
-  cards: Words[];
-}) => {
-  console.log('nextManche', string1)
+x.on('choseWinner', (payload: Words[][]) => {
+  stateMachine.set(2)
+  candidateWords.set(payload)
 })
-x.on('nextMancheMaster', (string1: {
-  phrase: Phrases;
-  cards: Words[];
-}) => {
-  console.log('nextMancheMaster', string1)
+x.on('waitChoseWinner', (payload: Words[][]) => {
+  stateMachine.set(2)
+  candidateWords.set(payload)
 })
 
-
-x.on('choseWinner', (string1: Words[][]) => {
-  console.log('choseWinner', string1)
-})
-x.on('waitChoseWinner', (string1: Words[][]) => {
-  console.log('waitChoseWinner', string1)
+x.on<userInfo[]>('points', n => {
+  userList.set(n)
 })
 
-x.on('points', n => {
-  console.log(n)
+x.on<userInfo[]>('youAreHost', () => {
+  iamhost.set(true)
 })
 
 x.on('error', e => {
   console.log(e)
 })
 
-
-export const ciao = {
-  start: () => {    
-    x.send<number>('start', 0)
-  },
-  choseCards: (n: number[]) => {    
-    x.send<number[]>('choseCards', n)
-  },
-  choseWinner: (n: number) => {    
-    x.send<number>('choseWinner', n)
-  }
+export const start = () => {
+  x.send<number>('start', 0)
 }
-
+export const choseCards = (n: number[]) => {
+  x.send<number[]>('choseCards', n)
+}
+export const choseWinner = (n: number) => {
+  x.send<number>('choseWinner', n)
+}
